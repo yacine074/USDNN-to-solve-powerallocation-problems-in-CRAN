@@ -9,7 +9,7 @@ Original file is located at
 import sys
 import os
 
-from library import *
+from packages import *
 from parameters import *
 
 
