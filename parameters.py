@@ -1,4 +1,4 @@
-from library import *
+from packages import *
 
 #initialization of parameters
 Pp = 10.0 # primary network power
