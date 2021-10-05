@@ -1,1 +1,1 @@
-# DNN-for-Resource-Allocation
+# Unsupervised-deep-learning-to-solve-powerallocation-problems-in-cognitive-relay-networks
