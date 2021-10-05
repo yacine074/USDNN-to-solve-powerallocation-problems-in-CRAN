@@ -19,11 +19,10 @@ Original file is located at
 import sys
 import os
 
-from library import *
+from packages import *
 from parameters import *
 from functions import *
-from optimization import *
-from losses import *
+from loss_function import *
 
 ### ### ### ### ### ### ### ### Debit metrics ### ### ### ### ### ### ### ### 
 
@@ -67,14 +66,14 @@ def relative_avreage_gap(X, Y):
 
 def evaluation(pred_debit, y_debit): # not completed
   """
-      This function calculates the mean of debit and different parameters.
+      This function calculates the mean of achievable rate, alpha and powers parameters.
 
       Parameters:
-         pred_debit: Predicted debit.
-         y_debit: True debit.
+         pred_debit: Predicted rate.
+         y_debit: Ground truth rate.
       
       Returns:
-         Mean of pr, ps, alpha, rs and rmse, nrmse, r2 of rs .
+         Mean of Pr, Ps, Alpha, Rs and RMSE, NRMSE, R_Square of Rs (Seconday achievable rate) .
 
   """
   ps_mean_hat, pr_mean_hat, alpha_mean_hat, rs_mean_hat = np.mean(pred_debit[:,11]), np.mean(pred_debit[:,10]), np.mean(pred_debit[:,9]), np.mean(pred_debit[:,8])
@@ -207,7 +206,7 @@ def ARD_mean(Grp, Gpp, Gsp, Alpha, Pr, Ps):
         mean = 0
   return mean
 
-def results_analysis(test_set, test_GT,Lambda, Learning_rate):
+def results_analysis(test_set, test_GT,Lambda, Learning_rate): #calling loss function loss_DF or loss_DF_WN ?
     
     predicted_debit = []
 
@@ -272,6 +271,7 @@ def results_analysis(test_set, test_GT,Lambda, Learning_rate):
       ard_mean = np.array([])
     
     return debit_gap_all, viloated_tau_all, pdd_vmean_all, pdd_vmax_all, ard_mean_all
+
 def Tau_Violation_percentage(xtest, violated_tau_nbr):
   """
     Parameters:
@@ -596,7 +596,7 @@ def CDB(x, y, debit_GT):
     fig.show()
     plt.pause(1)
 
-def train_curve(data, val_data, ylab, x_lim, y_lim, Lambda, filename):
+def train_evaluation(data, val_data, ylab, x_lim, y_lim, Lambda, filename):
   """
       Parameters:
          data: 1D array contains learning data history.
@@ -618,6 +618,7 @@ def train_curve(data, val_data, ylab, x_lim, y_lim, Lambda, filename):
   m_val = ['o','P']
   ls_train = ['solid','dotted']
   m_color = ['plum', 'wheat'] 
+  fig = plt.figure(1)
 
   for i in range (0, len(Lambda)) :
     
@@ -637,8 +638,75 @@ def train_curve(data, val_data, ylab, x_lim, y_lim, Lambda, filename):
       
   plt.show()
   plt.ion()
+  fig.savefig(filename+'.pdf', bbox_extra_artists=(lgd,), bbox_inches='tight')
 
+def test_evaluation(Secondary_rate_gap, Outage, Pnd_average, Pnd_maximum, Delta_out):
     
+    # First part : Average and maximum primary rate degradation and average degradation when in outage (∆out) as functions of λ over the test set.
+    
+    references = np.round(np.array([10**-1,10**-0.75,10**-0.5,10**-0.25,10**0,10**0.25,10**0.5,10**0.75,10**1,10**1.25,10**1.5,10**1.75,10**2]), decimals=4)
+   
+    rate_gap_plt = np.round(np.array(Secondary_rate_gap).transpose().reshape(references.shape[0]), decimals=4)
+
+    outage_plt = np.round(np.array(Outage).transpose().reshape(references.shape[0]), decimals=4)
+
+    pnd_average_plt = np.round(np.array(Pnd_average).transpose().reshape(references.shape[0]), decimals=4)
+
+    pnd_max_plt = np.round(np.array(Pnd_maximum).transpose().reshape(references.shape[0]), decimals=4)
+
+    delta_out_plt = np.round(np.array(Delta_out).transpose().reshape(references.shape[0]), decimals=4)
+    
+    plt.rcParams["figure.figsize"] = (10,5)
+    sns.set(style='white')
+    fig = plt.figure(1)
+
+    plt.grid()
+    xs = np.linspace(1, 21, 100)
+
+    plt.hlines(y=25, xmin=0, xmax=len(xs), colors='black', linestyles='--', lw=2, label=r'$\tau = 25\%$')
+
+    plt.plot(references, pnd_average_plt*100, label = 'Average', marker='8',markersize=9)
+
+    plt.plot(references, pnd_max_plt*100, label= 'Max', marker='^',markersize=9)
+
+    plt.plot(references, delta_out_plt*100, label= r'$\Delta_{out}$', marker='s',markersize=9)
+
+    #plt.yscale('log')
+    plt.xscale('log')
+    plt.xlabel(r'Hyperparameter $\lambda$',fontsize= 20)
+    plt.ylabel('Primary network degradation (%)',fontsize= 20)
+    plt.xticks(fontsize=16) 
+    plt.yticks(fontsize=16) 
+    #plt.xticks(references,['$10^{-1}$', '$10^{-0.75}$','$10^{-0.5}$', '$10^{-0.25}$','$10^{0}$', '$10^{0.25}$','$10^{0.5}$', '$10^{0.75}$','$10^{1}$','$10^{1.25}$','$10^{1.5}$','$10^{1.75}$','$10^{2}$'])
+    plt.legend(loc = 'best', fontsize= 16)
+    fig.savefig('Primary_network_degradation_stats.pdf', bbox_inches='tight')
+    plt.show()
+
+    plt.close()
+    
+    # Second part : Plot G and Outage
+    
+    plt.rcParams["figure.figsize"] = (10,5)
+    sns.set(style='white')
+    fig = plt.figure(1)
+    plt.grid()
+    
+    xs = np.linspace(1, 21, 100)
+
+    plt.plot(references, rate_gap_plt*100, label='Relative average gap', marker='^',markersize=9)
+    plt.plot(references, outage_plt, label = 'Outage', marker='H',markersize=9)
+
+    plt.ylabel('Percentage', fontsize= 20)
+    plt.xscale('log')
+    plt.xlabel(r'Hyperparameter $\lambda$',fontsize= 20)
+    plt.xticks(fontsize=16) 
+    plt.yticks(fontsize=16) 
+
+    #plt.xticks(A,['$10^{-1}$', '$10^{-0.75}$','$10^{-0.5}$', '$10^{-0.25}$','$10^{0}$', '$10^{0.25}$','$10^{0.5}$', '$10^{0.75}$','$10^{1}$','$10^{1.25}$','$10^{1.5}$','$10^{1.75}$','$10^{2}$'])
+    plt.legend(loc = 'best', fontsize= 16)
+    fig.savefig('G_and_Outage.pdf', bbox_inches='tight')
+    plt.show()
+
 
 def Pdd_Hist(Grp, Gpp, Gsp, Alpha, Pr, Ps, Alpha2, Pr2, Ps2):
   """
@@ -689,35 +757,6 @@ def Pdd_Hist(Grp, Gpp, Gsp, Alpha, Pr, Ps, Alpha2, Pr2, Ps2):
   plt.pause(1)
   plt.close()  
     
-'''
-def Pdd_Hist(Grp, Gpp, Gsp, Alpha, Pr, Ps):
-  """
-    Parameters:
-      Grp: Channel Gain between relay and primary receiver.
-      Gpp: Channel Gain between primary transmitter and primary receiver. 
-      Gsp: Channel Gain between secondary transmitter and primary receiver.
-      Alpha: Array containing Alpha values.
-      Pr: Array containing Power of relay.
-      Ps: Array containing Power of secondary network.
-    Returns:
-      histogram for Primary debit degradation 
-  """
-  sns.set(style='white')
-  plt.rcParams["figure.figsize"] = (10,5)
-
-  res = pdd(Grp, Gpp, Gsp , Alpha, Pr, Ps)
-  fig, ax = plt.subplots(1) # Creates figure fig and add an axes, ax.
-  plt.title('Primary achievable rate degradation distribution',fontweight="bold")
-  ax.hist(res, 100)
-  #plt.xlim((-1,3))
-  plt.grid()
-  plt.yscale('log')
-  plt.xlabel('Primary debit degradation percentage', fontsize=12)
-  plt.ylabel('Samples', fontsize=12)
-  
-  fig.savefig('Primary achievable rate degradation distribution.png')
-  fig.show() 
-'''
 def results_grid(title, data, lambda_label, lr_label):
   df = pd.DataFrame(data, lambda_label.keys(), lr_label.keys())
   fig, ax = plt.subplots(figsize=(10,10))
