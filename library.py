@@ -13,9 +13,9 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from gekko import GEKKO
 import scipy
-#from scipy.optimize import minimize
-#from scipy.optimize import fmin_cobyla
-#from scipy.stats import rice, nakagami
+from scipy.optimize import minimize
+from scipy.optimize import fmin_cobyla
+from scipy.stats import rice, nakagami
 from tempfile import TemporaryFile
 import seaborn as sns;
 sns.set_theme(color_codes=True)
