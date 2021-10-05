@@ -4,7 +4,10 @@ In  this  paper,  an  unsupervised  deep  learning  approach  is  proposed  to  
 
 
 ## Setup
-
+<ul>
+<li>Install latest version of python</li>
+<li>Second item</li>
+</ul>
 ## How to cite this code
 
 When writing a paper that uses this code, we would appreciate it if you could cite the paper.
