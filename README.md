@@ -12,7 +12,7 @@ In  this  paper,  an  unsupervised  deep  learning  approach  is  proposed  to  
 
 When writing a paper that uses this code, we would appreciate it if you could cite the paper.
 
-# References
+## References
 
 Yacine Benatia, Anne Savard, R. Negrel, and E. Veronica Belmega, "Unsupervised deep learning to solve powerallocation problems in cognitive relay networks".
 
