@@ -15,7 +15,7 @@ In  this  paper,  an  unsupervised  deep  learning  approach  is  proposed  to  
 
 ## How to cite this code
 
-When writing a paper that uses this code, we would appreciate it if you could cite the paper [HAL](https://hal.archives-ouvertes.fr/hal-03534545/).
+When writing a paper that uses this code, we would appreciate it if you could cite the paper [IEEE](https://ieeexplore.ieee.org/abstract/document/9814541/).
 
 ## References
 
